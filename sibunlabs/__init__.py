@@ -1,1 +1,2 @@
-from sibunlabs.pathfinder import Pathfinder
+from sibunlabs.pathfinder import Pathfinder, \
+    NoClosedPathFound, MaxIterationReached, OutOfBoundaryError
