@@ -18,11 +18,13 @@ def example_files():
     files_to_test = [
         (os.path.join(*["bin", "example-cells", "cell_tetragon.png"]), {
             'points' : [(201,127)],
-            'nopoints' : [],
+            'nopoints' : [(0,0)],
+            'center' : (197, 196),
         }),
         (os.path.join(*["bin", "example-cells", "cell_real_1.png"]), {
             'points' : [(102, 29), (169,92)],
-            'nopoints' : [(0,0), (29, 102)]
+            'nopoints' : [(0,0), (29, 102)],
+            'center' : (97, 99),
         }),
     ]
 
@@ -72,6 +74,16 @@ def test_pathfinding():
         for point in conditions['nopoints']:
             assert list(point) not in pathlist
 
-        #assert 1 == 0
+        radial_path = pathfinder.getRadialPath()
+
+        assert path.shape == radial_path.shape
+        assert pathfinder.getRadialPath()[:,0].min() > 0
+        assert pathfinder.getRadialPath()[:,1].min() > 0
+        assert pathfinder.getRadialPath()[:,1].max() < 360
+        assert pathfinder.getRadialPath()[:,1].mean()/180 > 0.9
+
+        centroid = pathfinder.getCentroid()
+        assert abs(centroid[0] - conditions['center'][0]) <= 1
+        assert abs(centroid[1] - conditions['center'][1]) <= 1
 
         im.close()

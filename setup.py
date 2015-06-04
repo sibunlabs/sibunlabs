@@ -7,10 +7,8 @@ config = {
     'description': 'A collection of libraries for use in science.',
     'author': 'Basilius Sauter',
     'url': 'https://github.com/sibunlabs/sibunlabs',
-    'download_url': '',
-    'author_email': '',
-    'version': 'dev',
-    'install_requires': ['nose', 'numpy', 'scipy'],
+    'version': '0.1',
+    'install_requires': ['nose', 'numpy', 'cv2'],
     'packages': ['sibunlabs'],
     'scripts': [],
     'name': 'sibunlabs'

@@ -2,39 +2,22 @@
 import numpy as np
 import cv2
 
-def absSobel(im, x = 0, y = 0):
-    """ Applies the sobel filter in x,y direction and returns the absolute
-        value
-    """
-    return abs(cv2.Sobel(im, cv2.CV_32F, x, y))
-
 def absSobelX(im):
-    """ Applies the sobel filter in x-direction and returns the absolute value
-    """
-    return absSobel(im, x=1)
+    return abs(cv2.Sobel(im, cv2.CV_32F, 1, 0))
 
 def absSobelY(im):
-    """ Applies the sobel filter in y-direction and returns the absolute value
-    """
-    return absSobel(im, y=1)
+    return abs(cv2.Sobel(im, cv2.CV_32F, 0, 1))
 
-def isAdjacent(point_A, point_B):
-    """ Tests if point_A is adjacent to point_B """
+def isAdjustand(point_A, point_B):
     if abs(point_A[0] - point_B[0]) <= 1 and abs(point_A[1] - point_B[1]) <= 1:
         return True
     else:
         return False
 
-def calculateDistance(p1, p2):
-    """ Calculates the distance between point p1 and p2 """
-    return np.sqrt((p2[0]-p1[0])**2 + (p2[1]-p1[1])**2)
-
 class Pathfinder:
-    # Never modifiy these members
     _image = None
     _shape = (None, None)
     _path = None
-    _centroid = None
 
     _start_x = None
     _start_y = None
@@ -54,9 +37,7 @@ class Pathfinder:
     DIRECTION_LEFT = 6
     DIRECTION_UPLEFT = 7
 
-    # The following members are okay to modify
     max_iterations = 1000
-    inflexibility = 5
 
     @property
     def width(self): return self._shape[1]
@@ -101,10 +82,9 @@ class Pathfinder:
         if sobel:
             self.applySobel()
 
-        self._setDefaultWeight()
+        self.setDefaultWeight()
 
-    def _setDefaultWeight(self):
-        """ Sets the default weight to a useful size """
+    def setDefaultWeight(self):
         self.setWeight(np.array([
             [1, 1, 1],
             [1, 1, 1],
@@ -112,22 +92,10 @@ class Pathfinder:
         ]))
 
     def setWeight(self, weight):
-        """ Sets a weight used for calculate the whitness of a given point (eg,
-            use a 3x3 array to take into account all adjacent points.
-        """
-        if len(weight.shape) != 2:
-            raise ArgumentError("weight must be 2-dimensional")
-        if weight.shape[0] != weight.shape[1]:
-            raise ArgumentError("weight must be a squared array")
-        if weight.shape[0]%2 == 0:
-            raise ArgumentError("weight must have uneven dimensions")
-
         self._weight = weight
         self._weightcount = self.calcWeightcount(weight)
 
     def calcWeightcount(self, weight_matrix):
-        """ Calculates how many actual weights are contained in the array. 0s
-            are not counted """
         c = 0
         for y in weight_matrix:
             for x in y:
@@ -150,70 +118,20 @@ class Pathfinder:
         if self._path is None:
             self._findPath()
 
-        newpath = np.zeros(self._path.shape)
+        oldpath = np.array(self._path)
+        newpath = np.array(self._path)
 
-        if centered == True:
-            centroid = self._calculateCentroid()
-        else:
-            centroid = np.array([0,0])
-
-        # Make a y,x array to a the more intuitive x,y array
-        newpath[:,0] = self._path[:,1] - centroid[1]
-        newpath[:,1] = self._path[:,0] - centroid[0]
+        newpath[:,0] = oldpath[:,1]
+        newpath[:,1] = oldpath[:,0]
 
         return newpath
-
-    def _calculateCentroid(self):
-        """ Calculates the geometric center (centroid) of the found path and
-            returns an (y, x) array with its coordinates as floats.
-        """
-        if self._centroid is None:
-            a = (0,0)
-            N = self._path.shape[0]
-            L = 0
-            for i in range(0, N):
-                pm = self._path[i-1]
-                p0 = self._path[i]
-                try:
-                    pp = self._path[i+1]
-                except IndexError:
-                    pp = self._path[0]
-                dm = calculateDistance(pm, p0)
-                di = calculateDistance(p0, pp)
-                x = a[0] + p0[0]*(dm)
-                y = a[1] + p0[1]*(di)
-                a = (y, x)
-                L = L + di
-
-            a = np.array(a)
-            c = a*1/(L)
-            self._centroid = c
-
-        return self._centroid
-
-    def getCentroid(self):
-        """ Returns a (x, y) tuple of the centroids coordinates """
-        centroid = self._calculateCentroid()
-        return (centroid[1], centroid[0])
 
     def getRadialPath(self):
         """ Returns a list of (r, phi) float tuples describing the path found by
             the search algorithm. The points are centered around the calculated
             centroid
         """
-        if self._path is None:
-            self._findPath()
-
-        # Center the path around the centroid
-        centroid = self._calculateCentroid()
-        cp = self._path - centroid
-
-        # Convert the path
-        radial_path = np.zeros(cp.shape)
-        radial_path[:,0] = np.sqrt(cp[:,0]**2 + cp[:,1]**2)
-        radial_path[:,1] = np.arctan2(cp[:,1], cp[:,0]) * (-180/np.pi) + 180
-
-        return radial_path
+        contour = self.getContour(centered = True)
 
     def _normalize(self):
         """ Normalizes the image array to have a value between 0.0 and 1.0 """
@@ -266,13 +184,13 @@ class Pathfinder:
                 if next_point in path_fragments[j][:-1]:
                     path_reports[j] = "self_bite"
                     break
-                if isAdjacent(next_point, path_fragments[j][0]):
+                if isAdjustand(next_point, path_fragments[j][0]):
                     path_reports[j] = "OK"
                     break
             i+=1
 
-        if path_reports[j] == "self_bite" and len(path_fragments[j]) > self.inflexibility:
-            reverse_path = [path_fragments[j][k-1] for k in range(self.inflexibility, 0, -1)]
+        if path_reports[j] == "self_bite" and len(path_fragments[j]) > 10:
+            reverse_path = [path_fragments[j][k-1] for k in range(10, 0, -1)]
             i = 0
             while True:
                 try:
@@ -305,7 +223,7 @@ class Pathfinder:
                         path_fragments[j] = new_path
                 i+=1
 
-        self._path = np.array(path_fragments[j])
+        self._path = path_fragments[j]
 
         if path_reports[j] == "self_bite":
             raise NoClosedPathFound
@@ -350,14 +268,14 @@ class Pathfinder:
         # Return next point
         return nextPoint
 
-    def _getDirectionMask(self, path, default_direction = None):
+    def _getDirectionMask(self, path, checkPoints = 5, default_direction = None):
         if default_direction is None:
             default_direction = self.DIRECTION_UP
 
         # Calculate direction or use default direction
-        if len(path) >= self.inflexibility:
+        if len(path) >= checkPoints:
             # Get the last 10 points
-            slopseq = path[-self.inflexibility:]
+            slopseq = path[-checkPoints:]
             # Get difference in y and x direction
             y_diff = slopseq[-1][0] - slopseq[0][0]
             x_diff = slopseq[-1][1] - slopseq[0][1]
