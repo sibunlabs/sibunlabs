@@ -22,6 +22,29 @@ The Pathfinder-Module can be used get a list of points describing the path of an
 It is best suited for bright field microscopy images of cells.
 
 ![Red Blood Cell](https://github.com/sibunlabs/sibunlabs/blob/master/bin/example-cells/cell_real_1.png)
-![Red Blood Cell with found Path](https://github.com/sibunlabs/sibunlabs/blob/master/bin/example-cells/cell_real_1_found_path.png)
+![Red Blood Cell: Sobel image with found Path](https://github.com/sibunlabs/sibunlabs/blob/master/bin/example-cells/cell_real_1_found_path.png)
+![Red Blood Cell: Path overlay](https://github.com/sibunlabs/sibunlabs/blob/master/bin/example-cells/cell_real_1_found_path_overlay.png)
 
 #### Example
+```python
+import os
+
+from PIL import Image, ImageSequence
+import numpy as np
+import matplotlib.pyplot as plt
+
+import sibunlabs
+
+im = Image.open(os.path.join(*["bin", "example-cells", "cell_real_1.png"])).convert("I")
+imarr = np.array(im, dtype = np.float32)
+
+pathfinder = sibunlabs.Pathfinder(im)
+path = pathfinder.getPath(centered = False).tolist()
+
+for point in path:
+    imarr[point[1],point[0]] = 0
+
+
+plt.imshow(imarr, interpolation = "nearest")
+plt.show()
+```
