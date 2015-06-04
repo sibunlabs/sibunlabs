@@ -29,5 +29,5 @@ It is best suited for bright field microscopy images of cells.
 ![Red Blood Cell: Path overlay](https://github.com/sibunlabs/sibunlabs/blob/master/bin/example-cells/cell_real_1_found_path_overlay.png)
 
 #### Examples
-*Overlay found contour with original image: [examples/pathfinder_1.py](https://github.com/sibunlabs/sibunlabs/blob/master/examples/pathfinder_1.py)
-*Show r as a function of phi by using getRadialPath(): [examples/pathfinder_2.py](https://github.com/sibunlabs/sibunlabs/blob/master/examples/pathfinder_2.py)
+* Overlay found contour with original image: [examples/pathfinder_1.py](https://github.com/sibunlabs/sibunlabs/blob/master/examples/pathfinder_1.py)
+* Show r as a function of phi by using getRadialPath(): [examples/pathfinder_2.py](https://github.com/sibunlabs/sibunlabs/blob/master/examples/pathfinder_2.py)
