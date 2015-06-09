@@ -102,3 +102,22 @@ def test_pathfinding():
         assert abs(centroid[1] - conditions['center'][1]) <= 1
 
         im.close()
+
+def test_special_rfa():
+    def sin(x):
+        return 0.1*np.sin(x)
+    def cos(x):
+        return 0.1*np.cos(x)
+
+    phi = np.linspace(0, 2*np.pi, 720)
+    r = 1+sin(phi)+cos(phi)+\
+        sin(2*phi)+cos(2*phi)+\
+        sin(3*phi)+cos(3*phi)+\
+        sin(4*phi)+cos(4*phi)+\
+        sin(5*phi)+cos(5*phi)
+
+    cj1, phij1 = sibunlabs.special.rfa(r, phi, True)
+    cj2, phij2 = sibunlabs.special.rfa(r, phi/np.pi*180, False)
+
+    assert cj1.all() == cj2.all()
+    assert phij1.all() == phij2.all()
