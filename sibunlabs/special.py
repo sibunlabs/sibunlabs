@@ -28,8 +28,8 @@ def rfa(r, phi, phi_in_radians = False):
         phi = phi/180*np.pi
 
     for j in range(0, k_max):
-        aj[j] += 2/N*(r*np.cos(j*phi)).sum()
-        bj[j] += 2/N*(r*np.sin(j*phi)).sum()
+        aj[j] += 1/N*(r*np.cos(j*phi)).sum()
+        bj[j] += 1/N*(r*np.sin(j*phi)).sum()
 
     cj = np.sqrt(aj**2+bj**2)
     phij = np.arctan2(bj, aj)
